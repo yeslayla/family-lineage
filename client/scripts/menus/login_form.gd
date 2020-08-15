@@ -31,9 +31,18 @@ func login(_text=""):
 	# Check for error
 	if error:
 		passwordEdit.text = ""
-		errorLabel.add_color_override("font_color", Color.red)
-		errorLabel.text = error.message
+		display_message(error.message)
 	else:
-		errorLabel.add_color_override("font_color", Color.green)
-		errorLabel.text = "Logged in successfully!"
-		print("Logged in successfully!")
+		display_message("Logged in successfully!", Color.green)
+		display_message("Connecting to server...", Color.gray)
+		error = yield(ServerConnection.connect_to_server_async(), "completed")
+		if error:
+			display_message(error.message)
+		else:
+			display_message("Connected to server!", Color.green)
+			yield(ServerConnection.join_world_async(), "completed")
+
+func display_message(message="", color=Color.red):
+	errorLabel.add_color_override("font_color", color)
+	errorLabel.text = message
+	print(message)
