@@ -65,7 +65,7 @@ jobs:
         PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         REGISTRY: "docker.pkg.github.com/${{ steps.find_repo.outputs.REPO }}"
         BUILD_PATH: "server"
-        DOCKERFILE: "Dockerfile"
+        DOCKERFILE: "server/Dockerfile"
         IMAGE_NAME: "gdwj24"
         TAG_NAME: stage
         LATEST: "false"
