@@ -1,0 +1,105 @@
+name: Build Dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number of name of build."
+        default: "dev"
+
+jobs:
+  Godot:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux, osx, win32, win64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: get_tag
+        name: Get Tag
+        env:
+          GITHUB_HEAD_REF: $${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "${{ github.event.inputs.version }}" = "" ]
+          then
+            TAG=$(jq --raw-output '.release.tag_name' $GITHUB_EVENT_PATH)
+          else
+            TAG=${{ github.event.inputs.version }}
+          fi
+          
+          echo ::set-output name=TAG::$TAG
+
+          echo $TAG > VERSION.txt
+      - name: Configure
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          if [ "$PLATFORM" = "win32" ] || [ "$PLATFORM" = "win64" ] ; then
+            echo "::set-env name=EXPORT_SUFFIX::.exe"
+          fi
+      - name: Build
+        id: build
+        uses: josephbmanley/build-godot-action@v1.4.0
+        with:
+          name: family${{ env.EXPORT_SUFFIX }}
+          preset: ${{ matrix.platform }}
+          projectDir: client
+          debugMode: 'true'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Client - ${{ matrix.platform }}
+          path: ${{ github.workspace }}/${{ steps.build.outputs.build }}
+  Docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build Plugin
+      id: build_plugin
+      uses: josephbmanley/build-nakama-plugin-action@v0.1.1
+      with:
+        nakamaVersion: "2.12.0"
+        moduleDirectory: server/plugins/world_rpc
+    - name: Move Binary
+      env:
+        plugin: ${{ steps.build_plugin.outputs.binary }}
+      run: |
+        mkdir -p server/data/modules
+        mv $plugin server/data/modules
+    - id: get_tag
+      name: Get Tag
+      env:
+        GITHUB_HEAD_REF: $${{ github.head_ref }}
+        GITHUB_BASE_REF: ${{ github.base_ref }}
+      run: |
+        if [ "${{ github.event.inputs.version }}" = "" ]
+        then
+          TAG=$(jq --raw-output '.release.tag_name' $GITHUB_EVENT_PATH)
+        else
+          TAG=${{ github.event.inputs.version }}
+        fi
+        
+        echo ::set-output name=TAG::$TAG
+
+        echo $TAG > VERSION.txt
+    - name: Get Docker Repo Name
+      id: find_repo
+      run: |
+        REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        echo ::set-output name=REPO::$REPO
+    - name: Push Tag to GitHub Package
+      uses: opspresso/action-docker@master
+      with:
+        args: --docker
+      env:
+        USERNAME: ${{ github.actor }}
+        PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        REGISTRY: "docker.pkg.github.com/${{ steps.find_repo.outputs.REPO }}"
+        BUILD_PATH: "server"
+        DOCKERFILE: "Dockerfile"
+        IMAGE_NAME: "gdwj24"
+        TAG_NAME: ${{ steps.get_tag.outputs.TAG }}
+        LATEST: "false"

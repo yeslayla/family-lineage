@@ -1,0 +1,16 @@
+name: GUT Tests
+
+on: [push, pull_request]
+
+jobs:
+  GUT:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Run GUT Test
+      id: run_tests
+      uses: josephbmanley/run-gut-tests-action@v1.0.1
+      with:
+        containerImage: "barichello/godot-ci:3.2.2"
+        directory: client
