@@ -27,21 +27,32 @@ func _ready():
 	passwordEdit.connect("text_changed", self, "validate_fields")
 	cPasswordEdit.connect("text_changed", self, "validate_fields")
 	
+	usernameEdit.connect("text_entered", self, "signup")
+	passwordEdit.connect("text_entered", self, "signup")
+	cPasswordEdit.connect("text_entered", self, "signup")
+	
 	# Connect submission button
 	button.connect("button_down", self, "signup")
 	
 	# Clear error message
 	errorLabel.text = ""
 
-func signup():
+func signup(_text=""):
+	if button.disabled:
+		return
+	
 	var error : NakamaException = yield(ServerConnection.signup_async(usernameEdit.text, passwordEdit.text), "completed")
 	
 	# Check for error
 	if error:
+		passwordEdit.text = ""
+		cPasswordEdit.text = ""
+		errorLabel.add_color_override("font_color", Color.red)
 		errorLabel.text = error.message
 	else:
+		errorLabel.add_color_override("font_color", Color.green)
+		errorLabel.text = "Signed up successfully!"
 		print("Signed up successfully!")
-		# Close signup form
 		hide()
 
 func validate_fields(_text=""):
