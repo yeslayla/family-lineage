@@ -1,0 +1,254 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://scripts/menus/login_form.gd" type="Script" id=1]
+[ext_resource path="res://scripts/menus/signup_form.gd" type="Script" id=2]
+
+[node name="AuthScene" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+usernamePath = NodePath("UsernameEdit")
+passwordPath = NodePath("PasswordEdit")
+buttonPath = NodePath("LoginButton")
+errorPath = NodePath("ErrorLabel")
+
+[node name="SignupDialog" type="WindowDialog" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -256.0
+margin_top = -140.0
+margin_right = 256.0
+margin_bottom = 140.0
+window_title = "Registration"
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+usernamePath = NodePath("UsernameEdit")
+passwordPath = NodePath("PasswordEdit")
+confirmPasswordPath = NodePath("CPasswordEdit")
+buttonPath = NodePath("SignupButton")
+errorPath = NodePath("ErrorLabel")
+
+[node name="MessageLabel" type="Label" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -208.0
+margin_top = 16.0
+margin_right = 208.0
+margin_bottom = 46.0
+text = "Welcome to the family!"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ErrorLabel" type="Label" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 48.0
+margin_right = 228.0
+margin_bottom = 62.0
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+text = "[Errors go here]"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UsernameLabel" type="Label" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 72.0
+margin_right = -193.0
+margin_bottom = 86.0
+text = "Email:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UsernameEdit" type="LineEdit" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 88.0
+margin_right = 232.0
+margin_bottom = 112.0
+
+[node name="PasswordLabel" type="Label" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 128.0
+margin_right = -168.0
+margin_bottom = 142.0
+text = "Password:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PasswordEdit" type="LineEdit" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 144.0
+margin_right = 232.0
+margin_bottom = 168.0
+secret = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CPasswordLabel" type="Label" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 176.0
+margin_right = -168.0
+margin_bottom = 190.0
+text = "Confirm Password:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CPasswordEdit" type="LineEdit" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 192.0
+margin_right = 232.0
+margin_bottom = 216.0
+secret = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SignupButton" type="Button" parent="SignupDialog"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = 136.0
+margin_top = -44.0
+margin_right = 228.0
+margin_bottom = -16.0
+disabled = true
+text = "Sign Up!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleLabel" type="Label" parent="."]
+margin_left = 256.0
+margin_top = 112.0
+margin_right = 768.0
+margin_bottom = 240.0
+text = "Family : WIP"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ErrorLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -72.0
+margin_top = -20.0
+margin_right = 77.0
+margin_bottom = -6.0
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+text = "[ERROR MESSAGE HERE]"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UsernameLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -88.0
+margin_top = 4.0
+margin_right = 88.0
+margin_bottom = 18.0
+text = "Email Address"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="UsernameEdit" type="LineEdit" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -232.0
+margin_top = 20.0
+margin_right = 232.0
+margin_bottom = 44.0
+
+[node name="PasswordLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -32.0
+margin_top = 60.0
+margin_right = 32.0
+margin_bottom = 74.0
+text = "Password"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PasswordEdit" type="LineEdit" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -232.0
+margin_top = 76.0
+margin_right = 232.0
+margin_bottom = 100.0
+secret = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LoginButton" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -32.0
+margin_top = 124.0
+margin_right = 32.0
+margin_bottom = 148.0
+text = "Login"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RegsiterButton" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -109.0
+margin_top = -20.0
+text = "Create Account"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="button_down" from="RegsiterButton" to="SignupDialog" method="popup_centered"]
