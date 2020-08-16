@@ -39,18 +39,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Build Plugin
+    - name: Build Nakma Plugin
       id: build_plugin
       uses: josephbmanley/build-nakama-plugin-action@v0.1.1
       with:
         nakamaVersion: "2.12.0"
-        moduleDirectory: server/plugins/world_rpc
+        moduleDirectory: server/plugin
     - name: Move Binary
-      env:
-        plugin: ${{ steps.build_plugin.outputs.binary }}
       run: |
         mkdir -p server/data/modules
-        mv $plugin server/data/modules
+        mv ${{ steps.build_plugin.outputs.binary }} server/data/modules
     - name: Get Docker Repo Name
       id: find_repo
       run: |

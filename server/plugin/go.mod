@@ -1,4 +1,4 @@
-module world_rpc
+module github.com/josephbmanley/family/server/plugin
 
 go 1.13
 
