@@ -36,9 +36,9 @@ func (m *Match) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB
 func (m *Match) MatchJoinAttempt(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presence runtime.Presence, metadata map[string]string) (interface{}, bool, string) {
 	mState, _ := state.(*MatchState)
 	if _, ok := mState.presences[presence.GetUserId()]; ok {
-		return mState, true, ""
-	} else {
 		return mState, false, "User already logged in."
+	} else {
+		return mState, true, ""
 	}
 
 }
@@ -48,7 +48,7 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 	for _, precense := range presences {
 		mState.presences[precense.GetUserId()] = precense
 	}
-	return state
+	return mState
 }
 
 func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presences []runtime.Presence) interface{} {
@@ -56,7 +56,7 @@ func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.D
 	for _, presence := range presences {
 		delete(mState.presences, presence.GetUserId())
 	}
-	return state
+	return mState
 }
 
 func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, messages []runtime.MatchData) interface{} {

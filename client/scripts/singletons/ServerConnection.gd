@@ -6,6 +6,7 @@ const SERVER_ENDPOINT := "nakama.cloudsumu.com"
 var _session : NakamaSession
 var _client : NakamaClient = Nakama.create_client(KEY, SERVER_ENDPOINT, 7350, "http")
 var _socket : NakamaSocket
+var _precenses : Dictionary = {}
 
 func authenticate_async(email : String, password : String) -> NakamaException:
 	var result : NakamaException = null
@@ -44,9 +45,18 @@ func join_world_async() -> Dictionary:
 	if world.is_exception():
 		print("Join world error occured: %s" % world.exception.message)
 		return {}
-	var _world_id : String = world.payload
-	print(_world_id)
-	return {}
+		
+	var match_join_result : NakamaRTAPI.Match = yield(_socket.join_match_async(world.payload), "completed")
+	if match_join_result.is_exception():
+		print("Join match error: %s - %s" % [match_join_result.exception.status_code, match_join_result.exception.message])
+		return {}
+	
+	for precense in match_join_result.presences:
+		_precenses[precense.user_id] = precense
+		
+	print("Currently connected: %s" % _precenses.size())
+
+	return _precenses
 
 func _on_socket_closed():
 	_socket = null
