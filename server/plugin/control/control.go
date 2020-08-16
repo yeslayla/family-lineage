@@ -3,8 +3,14 @@ package control
 import (
 	"context"
 	"database/sql"
-
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/josephbmanley/family/server/plugin/gamemap"
+)
+
+type OpCode int64
+
+const (
+	OpCodeTileUpdate = 1
 )
 
 type Match struct{}
@@ -12,20 +18,19 @@ type Match struct{}
 type MatchState struct {
 	presences map[string]runtime.Presence
 	inputs    map[string]string
-	positions map[string]string
-	jumps     map[string]string
-	colors    map[string]string
+	positions map[string]map[string]int
 	names     map[string]string
+	worldMap  *gamemap.WorldMap
 }
 
 func (m *Match) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, params map[string]interface{}) (interface{}, int, string) {
+
 	state := &MatchState{
 		presences: map[string]runtime.Presence{},
 		inputs:    map[string]string{},
-		positions: map[string]string{},
-		jumps:     map[string]string{},
-		colors:    map[string]string{},
+		positions: map[string]map[string]int{},
 		names:     map[string]string{},
+		worldMap:  gamemap.IntializeMap(),
 	}
 	tickRate := 10
 	label := "{\"name\": \"Game World\"}"
@@ -47,6 +52,20 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 	mState, _ := state.(*MatchState)
 	for _, precense := range presences {
 		mState.presences[precense.GetUserId()] = precense
+
+		mState.positions[precense.GetUserId()] = map[string]int{"x": 16, "y": 16}
+
+		mState.names[precense.GetUserId()] = "User"
+
+		if regionData, err := mState.worldMap.GetJsonRegion(16-8, 16+8, 16-8, 16+8); err != nil {
+			logger.Error(err.Error())
+			return mState
+		} else {
+			if sendErr := dispatcher.BroadcastMessage(OpCodeTileUpdate, regionData, []runtime.Presence{precense}, precense, true); sendErr != nil {
+				logger.Error(sendErr.Error())
+				return mState
+			}
+		}
 	}
 	return mState
 }
