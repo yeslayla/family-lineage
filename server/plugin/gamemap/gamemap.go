@@ -19,9 +19,9 @@ func (m WorldMap) GetTile(x int, y int) (int, error) {
 }
 
 func (m WorldMap) GetJsonRegion(start_x, end_x, start_y, end_y int) ([]byte, error) {
-	regionMap := make(map[int]map[int]int)
+	regionMap := map[int]map[int]int{}
 	for x := start_x; x < end_x; x++ {
-
+		regionMap[x] = map[int]int{}
 		for y := start_y; y < end_y; y++ {
 			if result, err := m.GetTile(x, y); err != nil {
 				return nil, err
