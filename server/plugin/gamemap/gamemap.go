@@ -6,7 +6,7 @@ import (
 )
 
 type WorldMap struct {
-	data  [][]int
+	data  [64][64]int
 	max_x int
 	max_y int
 }
@@ -39,6 +39,7 @@ func IntializeMap() *WorldMap {
 	worldMap := new(WorldMap)
 	worldMap.max_x = 64
 	worldMap.max_y = 64
+	worldMap.data = [64][64]int{}
 	for x := 0; x < worldMap.max_x; x++ {
 		for y := 0; y < worldMap.max_y; y++ {
 			worldMap.data[x][y] = 0
