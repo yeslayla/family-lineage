@@ -9,27 +9,20 @@ import (
 func getFirstWorld(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule) (string, error) {
 
 	// List existing matches
-	// that have been 1 & 4 players
+	// that have been 1 & 32 players
 	minSize := 1
-	maxSize := 31
-	//5, false, "", &minSize, &maxSize, ""
+	maxSize := 32
+
+	// Lists server authorative servers
 	if matches, err := nk.MatchList(ctx, 1, true, "", &minSize, &maxSize, ""); err != nil {
 		logger.Printf("Failed to list matches when grabing first world! Error: %v\n", err)
 		return "", err
 	} else {
-
-		//For debug purposes
-		for _, match := range matches {
-			logger.Info("Found match with id: %s", match.GetMatchId())
-		}
-
 		// If no matches exist, create one
 		if len(matches) <= 0 {
 
 			// Create match
-			//params := map[string]interface{}{}
 			matchID, createErr := nk.MatchCreate(ctx, "control", map[string]interface{}{})
-			//return nakama.match_create("world_control", {})
 
 			// Return if creation error
 			if createErr != nil {

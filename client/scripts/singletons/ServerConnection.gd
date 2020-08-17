@@ -1,5 +1,7 @@
 extends Node
 
+signal tile_update(tile_data)
+
 const KEY := "defaultkey"
 const SERVER_ENDPOINT := "nakama.cloudsumu.com"
 
@@ -7,6 +9,10 @@ var _session : NakamaSession
 var _client : NakamaClient = Nakama.create_client(KEY, SERVER_ENDPOINT, 7350, "http")
 var _socket : NakamaSocket
 var _precenses : Dictionary = {}
+
+enum OPCODE {
+	tile_update = 1
+}
 
 func authenticate_async(email : String, password : String) -> NakamaException:
 	var result : NakamaException = null
@@ -36,6 +42,7 @@ func connect_to_server_async() -> NakamaException:
 	_socket = Nakama.create_socket_from(_client)
 	var result : NakamaAsyncResult = yield(_socket.connect_async(_session), "completed")
 	if not result.is_exception():
+		_socket.connect("received_match_state", self, "_on_socket_received_match_state")
 		_socket.connect("closed", self, "_on_socket_closed")
 		return null
 	return result.exception
@@ -54,9 +61,15 @@ func join_world_async() -> Dictionary:
 	for precense in match_join_result.presences:
 		_precenses[precense.user_id] = precense
 		
-	print("Currently connected: %s" % _precenses.size())
+	print("Joined matched with %s other players!" % _precenses.size())
 
 	return _precenses
 
 func _on_socket_closed():
 	_socket = null
+	
+func _on_socket_received_match_state(match_state: NakamaRTAPI.MatchData):
+	match match_state.op_code:
+		OPCODE.tile_update:
+			emit_signal("tile_update", JSON.parse(match_state.data).result)
+
