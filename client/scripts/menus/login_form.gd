@@ -41,6 +41,7 @@ func login(_text=""):
 		else:
 			display_message("Connected to server!", Color.green)
 			# Load World
+			get_tree().change_scene("res://scenes/World.tscn")
 
 func display_message(message="", color=Color.red):
 	errorLabel.add_color_override("font_color", color)

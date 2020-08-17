@@ -61,7 +61,7 @@ func join_world_async() -> Dictionary:
 	for precense in match_join_result.presences:
 		_precenses[precense.user_id] = precense
 		
-	print("Currently connected: %s" % _precenses.size())
+	print("Joined matched with %s other players!" % _precenses.size())
 
 	return _precenses
 
