@@ -5,12 +5,14 @@ import (
 	"fmt"
 )
 
+// WorldMap is the data structure used game world
 type WorldMap struct {
 	data  [64][64]int
 	max_x int
 	max_y int
 }
 
+// GetTile method is used to grab a tile value with error checking
 func (m WorldMap) GetTile(x int, y int) (int, error) {
 	if x > m.max_x || y > m.max_y {
 		return -1, fmt.Errorf("Map out of bounds error: %d, %d", x, y)
@@ -18,11 +20,13 @@ func (m WorldMap) GetTile(x int, y int) (int, error) {
 	return m.data[x][y], nil
 }
 
-func (m WorldMap) GetJsonRegion(start_x, end_x, start_y, end_y int) ([]byte, error) {
+// GetJSONRegion method returns a JSON object containing the tile values of everything
+// within a given range
+func (m WorldMap) GetJSONRegion(startX, endX, startY, endY int) ([]byte, error) {
 	regionMap := map[int]map[int]int{}
-	for x := start_x; x < end_x; x++ {
+	for x := startX; x < endX; x++ {
 		regionMap[x] = map[int]int{}
-		for y := start_y; y < end_y; y++ {
+		for y := startY; y < endY; y++ {
 			if result, err := m.GetTile(x, y); err != nil {
 				return nil, err
 			} else {
@@ -35,6 +39,14 @@ func (m WorldMap) GetJsonRegion(start_x, end_x, start_y, end_y int) ([]byte, err
 	return jsonString, err
 }
 
+// GetJSONRegionAround returns a JSON object of tile data from a center point
+func (m WorldMap) GetJSONRegionAround(centerX, centerY, regionRadius int) ([]byte, error) {
+	jsonString, err := m.GetJSONRegion(centerX-regionRadius, centerX+regionRadius, centerY-regionRadius, centerY+regionRadius)
+	return jsonString, err
+}
+
+// IntializeMap is a method that helps easily
+// generate WorldMap objects
 func IntializeMap() *WorldMap {
 	worldMap := new(WorldMap)
 	worldMap.max_x = 64
