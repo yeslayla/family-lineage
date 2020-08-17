@@ -39,7 +39,11 @@ func (m *Match) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB
 }
 
 func (m *Match) MatchJoinAttempt(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presence runtime.Presence, metadata map[string]string) (interface{}, bool, string) {
-	mState, _ := state.(*MatchState)
+	mState, ok := state.(*MatchState)
+	if !ok {
+		logger.Error("Invalid match state on join attempt!")
+		return state, false, "Invalid match state!"
+	}
 	if _, ok := mState.presences[presence.GetUserId()]; ok {
 		return mState, false, "User already logged in."
 	} else {
@@ -49,7 +53,11 @@ func (m *Match) MatchJoinAttempt(ctx context.Context, logger runtime.Logger, db 
 }
 
 func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presences []runtime.Presence) interface{} {
-	mState, _ := state.(*MatchState)
+	mState, ok := state.(*MatchState)
+	if !ok {
+		logger.Error("Invalid match state on join!")
+		return state, false, "Invalid match state!"
+	}
 	for _, precense := range presences {
 		mState.presences[precense.GetUserId()] = precense
 
@@ -71,7 +79,11 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 }
 
 func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, presences []runtime.Presence) interface{} {
-	mState, _ := state.(*MatchState)
+	mState, ok := state.(*MatchState)
+	if !ok {
+		logger.Error("Invalid match state on leave!")
+		return state
+	}
 	for _, presence := range presences {
 		delete(mState.presences, presence.GetUserId())
 	}
