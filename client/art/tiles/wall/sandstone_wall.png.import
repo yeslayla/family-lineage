@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/grass.png-d6f949232ad65f7c5ac8611d6943aaf7.stex"
+path="res://.import/sandstone_wall.png-6b3429a0a14feb9baf4d504fe5dc1b95.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/tiles/grass.png"
-dest_files=[ "res://.import/grass.png-d6f949232ad65f7c5ac8611d6943aaf7.stex" ]
+source_file="res://art/tiles/wall/sandstone_wall.png"
+dest_files=[ "res://.import/sandstone_wall.png-6b3429a0a14feb9baf4d504fe5dc1b95.stex" ]
 
 [params]
 

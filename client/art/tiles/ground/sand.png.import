@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/dirt.png-2d96e51b4345f83ec0fb0c1ed8bf2b89.stex"
+path="res://.import/sand.png-b4d68c29536ccb1ae64b94ac61c9f451.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/tiles/dirt.png"
-dest_files=[ "res://.import/dirt.png-2d96e51b4345f83ec0fb0c1ed8bf2b89.stex" ]
+source_file="res://art/tiles/ground/sand.png"
+dest_files=[ "res://.import/sand.png-b4d68c29536ccb1ae64b94ac61c9f451.stex" ]
 
 [params]
 
@@ -20,7 +20,7 @@ compress/hdr_mode=0
 compress/bptc_ldr=0
 compress/normal_map=0
 flags/repeat=0
-flags/filter=true
+flags/filter=false
 flags/mipmaps=false
 flags/anisotropic=false
 flags/srgb=2
