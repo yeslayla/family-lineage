@@ -24,6 +24,9 @@ type PlayerPosResponse struct {
 func (p *PlayerEntity) ParsePositionRequest(data []byte) (PlayerPosResponse, error) {
 	var response PlayerPosResponse
 	err := json.Unmarshal(data, &response)
+	if err != nil {
+		fmt.Printf("Failed to parse: %s", string(data[:]))
+	}
 	return response, err
 }
 
