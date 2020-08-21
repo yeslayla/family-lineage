@@ -3,7 +3,6 @@ package gamemap
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 )
 
 // WorldMap is the data structure used game world
