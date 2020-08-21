@@ -7,6 +7,8 @@ import (
 	"github.com/josephbmanley/family/server/plugin/gamemap"
 )
 
+const maxRenderDistance int = 32
+
 // OpCode represents a enum for valid OpCodes
 // used by the match logic
 type OpCode int64
@@ -83,7 +85,7 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		mState.names[precense.GetUserId()] = "User"
 
 		// Get intial tile data around player
-		if regionData, err := mState.worldMap.GetJSONRegionAround(16, 16, 8); err != nil {
+		if regionData, err := mState.worldMap.GetJSONRegionAround(16, 16, maxRenderDistance); err != nil {
 			logger.Error(err.Error())
 		} else {
 
