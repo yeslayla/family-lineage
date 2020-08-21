@@ -138,8 +138,12 @@ func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.D
 		return state
 	}
 	for _, presence := range presences {
-		delete(mState.presences, presence.GetUserId())
-		delete(mState.players, presence.GetUserId())
+		if _, ok := mState.presences[presence.GetUserId()]; ok {
+			delete(mState.presences, presence.GetUserId())
+		}
+		if _, ok := mState.players[presence.GetUserId()]; ok {
+			delete(mState.players, presence.GetUserId())
+		}
 	}
 	return mState
 }
