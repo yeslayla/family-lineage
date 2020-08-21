@@ -139,8 +139,12 @@ func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB
 
 			if response, err := player.ParsePositionRequest(message.GetData()); err == nil {
 				player.UpdateBasedOnResponse(response)
-				dispatcher.BroadcastMessage(OpCodeUpdatePosition, []byte{}, mState.GetPrecenseList(), player.Presence, false)
-				logger.Info("Yes")
+				if jsonObject, err := player.GetPosJSON(); err == nil {
+					dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObject, mState.GetPrecenseList(), player.Presence, false)
+					logger.Info("Yes")
+				} else {
+					logger.Error(fmt.Sprintf("Failed to get player json: %s", err.Error))
+				}
 			} else {
 				logger.Error(fmt.Sprintf("Failed to parse update pos request: %s", err.Error))
 			}
