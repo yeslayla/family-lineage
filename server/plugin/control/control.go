@@ -113,7 +113,7 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 			if jsonObj, err := player.GetPosJSON(); err != nil {
 				logger.Error(err.Error())
 			} else {
-				if sendErr := dispatcher.BroadcastMessage(OpCodeTileUpdate, jsonObj, []runtime.Presence{precense}, player.Presence, true); sendErr != nil {
+				if sendErr := dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObj, []runtime.Presence{precense}, player.Presence, true); sendErr != nil {
 					logger.Error(sendErr.Error())
 				}
 			}
