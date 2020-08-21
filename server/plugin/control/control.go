@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/heroiclabs/nakama-common/runtime"
 	"github.com/josephbmanley/family/server/plugin/entities"
 	"github.com/josephbmanley/family/server/plugin/gamemap"
@@ -17,6 +18,8 @@ type OpCode int64
 const (
 	// OpCodeTileUpdate is used for tile updates
 	OpCodeTileUpdate = 1
+	// OpCodeUpdatePosition is used for player position updates
+	OpCodeUpdatePosition = 2
 )
 
 // Match is the object registered
@@ -30,6 +33,15 @@ type MatchState struct {
 	players   map[string]entities.PlayerEntity
 	inputs    map[string]string
 	worldMap  *gamemap.WorldMap
+}
+
+// GetPrecenseList returns an array of current precenes in an array
+func (state *MatchState) GetPrecenseList() []runtime.Presence {
+	precenseList := []runtime.Presence{}
+	for _, precense := range state.presences {
+		precenseList = append(precenseList, precense)
+	}
+	return precenseList
 }
 
 // MatchInit is called when a new match is created
@@ -79,8 +91,9 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		mState.presences[precense.GetUserId()] = precense
 
 		player := entities.PlayerEntity{
-			X: 16,
-			Y: 16,
+			X:        16,
+			Y:        16,
+			Presence: precense,
 		}
 
 		mState.players[precense.GetUserId()] = player
@@ -108,18 +121,32 @@ func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.D
 	}
 	for _, presence := range presences {
 		delete(mState.presences, presence.GetUserId())
+		delete(mState.players, presence.GetUserId())
 	}
 	return mState
 }
 
 // MatchLoop is code that is executed every tick
 func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, messages []runtime.MatchData) interface{} {
-	// Custom code to:
-	// - Process the messages received.
-	// - Update the match state based on the messages and time elapsed.
-	// - Broadcast new data messages to match participants.
+	mState, ok := state.(*MatchState)
+	if !ok {
+		logger.Error("Invalid match state on leave!")
+		return state
+	}
+	for _, message := range messages {
+		if message.GetOpCode() == OpCodeUpdatePosition {
+			player := mState.players[message.GetUserId()]
 
-	return state
+			if response, err := player.ParsePositionRequest(message.GetData()); err == nil {
+				player.UpdateBasedOnResponse(response)
+				dispatcher.BroadcastMessage(OpCodeUpdatePosition, []byte{}, mState.GetPrecenseList(), player.Presence, false)
+				logger.Info("Yes")
+			} else {
+				logger.Error(fmt.Sprintf("Failed to parse update pos request: %s", err.Error))
+			}
+		}
+	}
+	return mState
 }
 
 // MatchTerminate is code that is executed when the match ends

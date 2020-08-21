@@ -27,11 +27,10 @@ func (m WorldMap) GetJSONRegion(startX, endX, startY, endY int) ([]byte, error) 
 	for x := startX; x < endX; x++ {
 		regionMap[x] = map[int]int{}
 		for y := startY; y < endY; y++ {
-			if result, err := m.GetTile(x, y); err != nil {
-				return nil, err
-			} else {
-				regionMap[x][y] = result
-			}
+
+			// GetTile and ignore out of bounds errors
+			result, _ := m.GetTile(x, y)
+			regionMap[x][y] = result
 		}
 	}
 
@@ -40,8 +39,10 @@ func (m WorldMap) GetJSONRegion(startX, endX, startY, endY int) ([]byte, error) 
 }
 
 // GetJSONRegionAround returns a JSON object of tile data from a center point
-func (m WorldMap) GetJSONRegionAround(centerX, centerY, regionRadius int) ([]byte, error) {
-	jsonString, err := m.GetJSONRegion(centerX-regionRadius, centerX+regionRadius, centerY-regionRadius, centerY+regionRadius)
+func (m WorldMap) GetJSONRegionAround(centerX float64, centerY float64, regionRadius int) ([]byte, error) {
+	var xCenter int = int(centerX)
+	var yCenter int = int(centerY)
+	jsonString, err := m.GetJSONRegion(xCenter-regionRadius, xCenter+regionRadius, yCenter-regionRadius, yCenter+regionRadius)
 	return jsonString, err
 }
 
