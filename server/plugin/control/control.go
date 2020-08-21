@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/josephbmanley/family/server/plugin/entities"
 	"github.com/josephbmanley/family/server/plugin/gamemap"
 )
 
@@ -26,9 +27,8 @@ type Match struct{}
 // Nakama match methods
 type MatchState struct {
 	presences map[string]runtime.Presence
+	players   map[string]entities.PlayerEntity
 	inputs    map[string]string
-	positions map[string]map[string]int
-	names     map[string]string
 	worldMap  *gamemap.WorldMap
 }
 
@@ -38,8 +38,7 @@ func (m *Match) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB
 	state := &MatchState{
 		presences: map[string]runtime.Presence{},
 		inputs:    map[string]string{},
-		positions: map[string]map[string]int{},
-		names:     map[string]string{},
+		players:   map[string]entities.PlayerEntity{},
 		worldMap:  gamemap.IntializeMap(),
 	}
 	tickRate := 10
@@ -79,13 +78,15 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		// Add presence to map
 		mState.presences[precense.GetUserId()] = precense
 
-		// Set player spawn pos
-		mState.positions[precense.GetUserId()] = map[string]int{"x": 16, "y": 16}
+		player := entities.PlayerEntity{
+			X: 16,
+			Y: 16,
+		}
 
-		mState.names[precense.GetUserId()] = "User"
+		mState.players[precense.GetUserId()] = player
 
 		// Get intial tile data around player
-		if regionData, err := mState.worldMap.GetJSONRegionAround(16, 16, maxRenderDistance); err != nil {
+		if regionData, err := mState.worldMap.GetJSONRegionAround(player.X, player.Y, maxRenderDistance); err != nil {
 			logger.Error(err.Error())
 		} else {
 
