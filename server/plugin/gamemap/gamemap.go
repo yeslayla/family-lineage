@@ -7,7 +7,7 @@ import (
 
 // WorldMap is the data structure used game world
 type WorldMap struct {
-	data  [64][64]int
+	data  [256][256]int
 	max_x int
 	max_y int
 }
@@ -50,9 +50,9 @@ func (m WorldMap) GetJSONRegionAround(centerX float64, centerY float64, regionRa
 // generate WorldMap objects
 func IntializeMap() *WorldMap {
 	worldMap := new(WorldMap)
-	worldMap.max_x = 64
-	worldMap.max_y = 64
-	worldMap.data = [64][64]int{}
+	worldMap.max_x = 256
+	worldMap.max_y = 256
+	worldMap.data = [256][256]int{}
 	for x := 0; x < worldMap.max_x; x++ {
 		for y := 0; y < worldMap.max_y; y++ {
 			worldMap.data[x][y] = 0
