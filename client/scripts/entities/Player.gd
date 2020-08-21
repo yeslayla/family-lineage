@@ -18,6 +18,7 @@ func _process(delta):
 	
 	if move:
 		move_along_path(base_movement_speed * delta)
+		ServerConnection.send_player_position(global_position)
 
 func move_along_path(distance : float):
 	var start_point := global_position
