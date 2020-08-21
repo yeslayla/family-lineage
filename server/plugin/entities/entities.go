@@ -16,32 +16,21 @@ type PlayerEntity struct {
 
 // PlayerPosResponse struct that represents client data
 type PlayerPosResponse struct {
-	X string
-	Y string
+	X float64
+	Y float64
 }
 
 // ParsePositionRequest parses data from client
 func (p *PlayerEntity) ParsePositionRequest(data []byte) (PlayerPosResponse, error) {
 	var response PlayerPosResponse
 	err := json.Unmarshal(data, &response)
-	if err != nil {
-		fmt.Printf("Failed to parse: %s", string(data[:]))
-	}
 	return response, err
 }
 
 //UpdateBasedOnResponse updates the player object based on a response object
 func (p *PlayerEntity) UpdateBasedOnResponse(response PlayerPosResponse) error {
-	if fx, err := strconv.ParseFloat(response.X, 64); err != nil {
-		return err
-	} else {
-		p.X = fx
-		if fy, err := strconv.ParseFloat(response.Y, 64); err != nil {
-			return err
-		} else {
-			p.Y = fy
-		}
-	}
+	p.Y = response.Y
+	p.X = response.X
 
 	return nil
 }
