@@ -7,14 +7,14 @@ import (
 
 // WorldMap is the data structure used game world
 type WorldMap struct {
-	data  [64][64]int
+	data  [256][256]int
 	max_x int
 	max_y int
 }
 
 // GetTile method is used to grab a tile value with error checking
 func (m WorldMap) GetTile(x int, y int) (int, error) {
-	if x > m.max_x || y > m.max_y {
+	if x > m.max_x || y > m.max_y || x < 0 || y < 0 {
 		return -1, fmt.Errorf("Map out of bounds error: %d, %d", x, y)
 	}
 	return m.data[x][y], nil
@@ -27,11 +27,10 @@ func (m WorldMap) GetJSONRegion(startX, endX, startY, endY int) ([]byte, error) 
 	for x := startX; x < endX; x++ {
 		regionMap[x] = map[int]int{}
 		for y := startY; y < endY; y++ {
-			if result, err := m.GetTile(x, y); err != nil {
-				return nil, err
-			} else {
-				regionMap[x][y] = result
-			}
+
+			// GetTile and ignore out of bounds errors
+			result, _ := m.GetTile(x, y)
+			regionMap[x][y] = result
 		}
 	}
 
@@ -40,8 +39,10 @@ func (m WorldMap) GetJSONRegion(startX, endX, startY, endY int) ([]byte, error) 
 }
 
 // GetJSONRegionAround returns a JSON object of tile data from a center point
-func (m WorldMap) GetJSONRegionAround(centerX, centerY, regionRadius int) ([]byte, error) {
-	jsonString, err := m.GetJSONRegion(centerX-regionRadius, centerX+regionRadius, centerY-regionRadius, centerY+regionRadius)
+func (m WorldMap) GetJSONRegionAround(centerX float64, centerY float64, regionRadius int) ([]byte, error) {
+	var xCenter int = int(centerX)
+	var yCenter int = int(centerY)
+	jsonString, err := m.GetJSONRegion(xCenter-regionRadius, xCenter+regionRadius, yCenter-regionRadius, yCenter+regionRadius)
 	return jsonString, err
 }
 
@@ -49,9 +50,9 @@ func (m WorldMap) GetJSONRegionAround(centerX, centerY, regionRadius int) ([]byt
 // generate WorldMap objects
 func IntializeMap() *WorldMap {
 	worldMap := new(WorldMap)
-	worldMap.max_x = 64
-	worldMap.max_y = 64
-	worldMap.data = [64][64]int{}
+	worldMap.max_x = 256
+	worldMap.max_y = 256
+	worldMap.data = [256][256]int{}
 	for x := 0; x < worldMap.max_x; x++ {
 		for y := 0; y < worldMap.max_y; y++ {
 			worldMap.data[x][y] = 0

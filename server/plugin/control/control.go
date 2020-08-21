@@ -3,9 +3,13 @@ package control
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/josephbmanley/family/server/plugin/entities"
 	"github.com/josephbmanley/family/server/plugin/gamemap"
 )
+
+const maxRenderDistance int = 32
 
 // OpCode represents a enum for valid OpCodes
 // used by the match logic
@@ -14,6 +18,8 @@ type OpCode int64
 const (
 	// OpCodeTileUpdate is used for tile updates
 	OpCodeTileUpdate = 1
+	// OpCodeUpdatePosition is used for player position updates
+	OpCodeUpdatePosition = 2
 )
 
 // Match is the object registered
@@ -24,10 +30,18 @@ type Match struct{}
 // Nakama match methods
 type MatchState struct {
 	presences map[string]runtime.Presence
+	players   map[string]entities.PlayerEntity
 	inputs    map[string]string
-	positions map[string]map[string]int
-	names     map[string]string
 	worldMap  *gamemap.WorldMap
+}
+
+// GetPrecenseList returns an array of current precenes in an array
+func (state *MatchState) GetPrecenseList() []runtime.Presence {
+	precenseList := []runtime.Presence{}
+	for _, precense := range state.presences {
+		precenseList = append(precenseList, precense)
+	}
+	return precenseList
 }
 
 // MatchInit is called when a new match is created
@@ -36,8 +50,7 @@ func (m *Match) MatchInit(ctx context.Context, logger runtime.Logger, db *sql.DB
 	state := &MatchState{
 		presences: map[string]runtime.Presence{},
 		inputs:    map[string]string{},
-		positions: map[string]map[string]int{},
-		names:     map[string]string{},
+		players:   map[string]entities.PlayerEntity{},
 		worldMap:  gamemap.IntializeMap(),
 	}
 	tickRate := 10
@@ -77,19 +90,40 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		// Add presence to map
 		mState.presences[precense.GetUserId()] = precense
 
-		// Set player spawn pos
-		mState.positions[precense.GetUserId()] = map[string]int{"x": 16, "y": 16}
+		player := entities.PlayerEntity{
+			X:        16,
+			Y:        16,
+			Presence: precense,
+		}
 
-		mState.names[precense.GetUserId()] = "User"
+		if jsonObj, err := player.GetPosJSON(); err != nil {
+			logger.Error(err.Error())
+		} else {
+			if sendErr := dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObj, []runtime.Presence{precense}, player.Presence, true); sendErr != nil {
+				logger.Error(sendErr.Error())
+			}
+		}
+
+		mState.players[precense.GetUserId()] = player
 
 		// Get intial tile data around player
-		if regionData, err := mState.worldMap.GetJSONRegionAround(16, 16, 8); err != nil {
+		if regionData, err := mState.worldMap.GetJSONRegionAround(player.X, player.Y, maxRenderDistance); err != nil {
 			logger.Error(err.Error())
 		} else {
 
 			// Broadcast tile data to client
 			if sendErr := dispatcher.BroadcastMessage(OpCodeTileUpdate, regionData, []runtime.Presence{precense}, precense, true); sendErr != nil {
 				logger.Error(sendErr.Error())
+			}
+		}
+		for _, otherPlayer := range mState.players {
+			// Broadcast player data to client
+			if jsonObj, err := otherPlayer.GetPosJSON(); err != nil {
+				logger.Error(err.Error())
+			} else {
+				if sendErr := dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObj, []runtime.Presence{precense}, otherPlayer.Presence, true); sendErr != nil {
+					logger.Error(sendErr.Error())
+				}
 			}
 		}
 	}
@@ -104,19 +138,41 @@ func (m *Match) MatchLeave(ctx context.Context, logger runtime.Logger, db *sql.D
 		return state
 	}
 	for _, presence := range presences {
-		delete(mState.presences, presence.GetUserId())
+		if _, ok := mState.presences[presence.GetUserId()]; ok {
+			delete(mState.presences, presence.GetUserId())
+		}
+		if _, ok := mState.players[presence.GetUserId()]; ok {
+			delete(mState.players, presence.GetUserId())
+		}
 	}
 	return mState
 }
 
 // MatchLoop is code that is executed every tick
 func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, dispatcher runtime.MatchDispatcher, tick int64, state interface{}, messages []runtime.MatchData) interface{} {
-	// Custom code to:
-	// - Process the messages received.
-	// - Update the match state based on the messages and time elapsed.
-	// - Broadcast new data messages to match participants.
+	mState, ok := state.(*MatchState)
+	if !ok {
+		logger.Error("Invalid match state on leave!")
+		return state
+	}
+	for _, message := range messages {
+		if message.GetOpCode() == OpCodeUpdatePosition {
+			player := mState.players[message.GetUserId()]
 
-	return state
+			if response, err := player.ParsePositionRequest(message.GetData()); err == nil {
+				player.UpdateBasedOnResponse(response)
+				if jsonObject, err := player.GetPosJSON(); err == nil {
+					dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObject, mState.GetPrecenseList(), player.Presence, false)
+					logger.Info("Yes")
+				} else {
+					logger.Error(fmt.Sprintf("Failed to get player json: %s", err.Error))
+				}
+			} else {
+				logger.Error(fmt.Sprintf("Failed to parse update pos request: %s", err.Error))
+			}
+		}
+	}
+	return mState
 }
 
 // MatchTerminate is code that is executed when the match ends
