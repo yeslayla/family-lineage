@@ -108,6 +108,16 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				logger.Error(sendErr.Error())
 			}
 		}
+		for _, player := range mState.players {
+			// Broadcast player data to client
+			if jsonObj, err := player.GetPosJSON(); err != nil {
+				logger.Error(err.Error())
+			} else {
+				if sendErr := dispatcher.BroadcastMessage(OpCodeTileUpdate, jsonObj, []runtime.Presence{precense}, player.Presence, true); sendErr != nil {
+					logger.Error(sendErr.Error())
+				}
+			}
+		}
 	}
 	return mState
 }
