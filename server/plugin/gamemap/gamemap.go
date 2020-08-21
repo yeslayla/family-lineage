@@ -3,6 +3,7 @@ package gamemap
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 )
 
 // WorldMap is the data structure used game world
@@ -14,7 +15,7 @@ type WorldMap struct {
 
 // GetTile method is used to grab a tile value with error checking
 func (m WorldMap) GetTile(x int, y int) (int, error) {
-	if x > m.max_x || y > m.max_y {
+	if x > m.max_x || y > m.max_y || x < 0 || y < 0 {
 		return -1, fmt.Errorf("Map out of bounds error: %d, %d", x, y)
 	}
 	return m.data[x][y], nil
