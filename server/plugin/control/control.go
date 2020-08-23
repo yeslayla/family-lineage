@@ -110,6 +110,7 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 			player.X = 16
 			player.Y = 16
 		} else {
+			logger.Error(loadPlayerErr.Error())
 			player = entities.PlayerEntity{
 				X:        16,
 				Y:        16,
