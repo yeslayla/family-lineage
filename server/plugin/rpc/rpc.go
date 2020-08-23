@@ -58,16 +58,16 @@ func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk 
 		dataExist, err := entities.PlayerDataExists(ctx, nk, userID)
 		if err != nil {
 			logger.Error(err.Error())
-			return "", err
+			return err.Error(), err
 		}
 
 		if dataExist {
-			return "", errors.New("user already has a character")
+			return "Already Exists Exception", errors.New("user already has a character")
 		} else {
 			playerData := entities.PlayerSaveData{}
 			err := json.Unmarshal([]byte(payload), &playerData)
 			if err != nil {
-				return "", err
+				return "Failed to load data from client!", err
 			}
 			player := entities.PlayerEntity{
 				Name:    playerData.Name,
@@ -75,9 +75,9 @@ func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk 
 			}
 			saveErr := player.SaveUserID(ctx, nk, userID)
 			if saveErr != nil {
-				return "", err
+				return "Failed to write data to storage!", err
 			}
-			return "", nil
+			return "Success!", nil
 		}
 	}
 	return "", errors.New("Unknown error occured!")
