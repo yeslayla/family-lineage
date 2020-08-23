@@ -107,10 +107,16 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		player, loadPlayerErr := entities.LoadPlayer(ctx, nk, precense)
 		if loadPlayerErr != nil {
 			logger.Error(loadPlayerErr.Error())
+			player.X = 16
+			player.Y = 16
+		} else {
+			player = entities.PlayerEntity{
+				X:        16,
+				Y:        16,
+				Name:     "ERROR",
+				Presence: precense,
+			}
 		}
-
-		player.X = 16
-		player.Y = 16
 
 		if jsonObj, err := player.GetPosJSON(); err != nil {
 			logger.Error(err.Error())

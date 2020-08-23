@@ -80,6 +80,8 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 			}
 			player.Name = responseData.Name
 			player.Faction = gameworld.Faction(responseData.Faction)
+			player.X = 16.0
+			player.Y = 16.0
 		}
 	}
 	return player, nil
