@@ -53,8 +53,9 @@ func GetWorldId(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 }
 
 func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
+
 	userID, ok := ctx.Value(runtime.RUNTIME_CTX_USER_ID).(string)
-	if !ok {
+	if ok {
 		dataExist, err := entities.PlayerDataExists(ctx, nk, userID)
 		if err != nil {
 			logger.Error(err.Error())
@@ -67,6 +68,7 @@ func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk 
 			playerData := entities.PlayerSaveData{}
 			err := json.Unmarshal([]byte(payload), &playerData)
 			if err != nil {
+				logger.Error("Failed to load data from client: %s", err.Error())
 				return "Failed to load data from client!", err
 			}
 			player := entities.PlayerEntity{
@@ -75,10 +77,14 @@ func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk 
 			}
 			saveErr := player.SaveUserID(ctx, nk, userID)
 			if saveErr != nil {
+				logger.Error("Failed to write data to storage on create: %s", err.Error())
 				return "Failed to write data to storage!", err
 			}
+			logger.Info("Created new character for: %s", userID)
 			return "Success!", nil
 		}
+	} else {
+		logger.Error("Missing User ID from context!")
+		return "", errors.New("Missing User ID from context!")
 	}
-	return "", errors.New("Unknown error occured!")
 }
