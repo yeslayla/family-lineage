@@ -85,6 +85,17 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 	return player, nil
 }
 
+// GetPosJSON returns the player's position as a JSON object
+func (p *PlayerEntity) GetPosJSON() ([]byte, error) {
+	playerMap := map[string]string{
+		"player": p.Presence.GetUserId(),
+		"x":      fmt.Sprintf("%f", p.X),
+		"y":      fmt.Sprintf("%f", p.Y),
+	}
+	jsonData, err := json.Marshal(playerMap)
+	return jsonData, err
+}
+
 // Save passes the precensce id to SaveUserID
 func (p *PlayerEntity) Save(ctx context.Context, nk runtime.NakamaModule) error {
 
@@ -141,12 +152,12 @@ func (p *PlayerEntity) UpdateBasedOnResponse(response PlayerPosResponse) error {
 	return nil
 }
 
-// GetPosJSON returns the player's position as a JSON object
-func (p *PlayerEntity) GetPosJSON() ([]byte, error) {
+// GetStateJSON builds a json object for player state
+func (p *PlayerEntity) GetStateJSON() ([]byte, error) {
 	playerMap := map[string]string{
-		"player": p.Presence.GetUserId(),
-		"x":      fmt.Sprintf("%f", p.X),
-		"y":      fmt.Sprintf("%f", p.Y),
+		"player":  p.Presence.GetUserId(),
+		"name":    p.Name,
+		"faction": strconv.Itoa(int(p.Faction)),
 	}
 	jsonData, err := json.Marshal(playerMap)
 	return jsonData, err

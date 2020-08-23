@@ -20,6 +20,8 @@ const (
 	OpCodeTileUpdate = 1
 	// OpCodeUpdatePosition is used for player position updates
 	OpCodeUpdatePosition = 2
+	// OpCodePlayerState is for player object updates
+	OpCodePlayerState = 3
 )
 
 // Match is the object registered
@@ -102,16 +104,22 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		// Add presence to map
 		mState.presences[precense.GetUserId()] = precense
 
-		player := entities.PlayerEntity{
-			X:        16,
-			Y:        16,
-			Presence: precense,
+		player, loadPlayerErr := entities.LoadPlayer(ctx, nk, precense)
+		if loadPlayerErr != nil {
+			logger.Error(loadPlayerErr.Error())
 		}
+
+		player.X = 16
+		player.Y = 16
 
 		if jsonObj, err := player.GetPosJSON(); err != nil {
 			logger.Error(err.Error())
 		} else {
 			if sendErr := dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObj, []runtime.Presence{precense}, player.Presence, true); sendErr != nil {
+				logger.Error(sendErr.Error())
+			}
+			stateJSON, _ := player.GetStateJSON()
+			if sendErr := dispatcher.BroadcastMessage(OpCodePlayerState, stateJSON, mState.GetPrecenseList(), player.Presence, true); sendErr != nil {
 				logger.Error(sendErr.Error())
 			}
 		}
@@ -175,7 +183,6 @@ func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB
 				player.UpdateBasedOnResponse(response)
 				if jsonObject, err := player.GetPosJSON(); err == nil {
 					dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObject, mState.GetPrecenseList(), player.Presence, false)
-					logger.Info("Yes")
 				} else {
 					logger.Error(fmt.Sprintf("Failed to get player json: %s", err.Error))
 				}
