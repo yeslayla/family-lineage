@@ -3,7 +3,11 @@ package rpc
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"github.com/heroiclabs/nakama-common/runtime"
+	"github.com/josephbmanley/family/server/plugin/entities"
+	"github.com/josephbmanley/family/server/plugin/gameworld"
 )
 
 func getFirstWorld(ctx context.Context, logger runtime.Logger, nk runtime.NakamaModule) (string, error) {
@@ -46,4 +50,35 @@ func getFirstWorld(ctx context.Context, logger runtime.Logger, nk runtime.Nakama
 func GetWorldId(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
 	matchID, err := getFirstWorld(ctx, logger, nk)
 	return matchID, err
+}
+
+func CreateCharacter(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runtime.NakamaModule, payload string) (string, error) {
+	userID, ok := ctx.Value(runtime.RUNTIME_CTX_USER_ID).(string)
+	if !ok {
+		dataExist, err := entities.PlayerDataExists(ctx, nk, userID)
+		if err != nil {
+			logger.Error(err.Error())
+			return "", err
+		}
+
+		if dataExist {
+			return "", errors.New("user already has a character")
+		} else {
+			playerData := entities.PlayerSaveData{}
+			err := json.Unmarshal([]byte(payload), &playerData)
+			if err != nil {
+				return "", err
+			}
+			player := entities.PlayerEntity{
+				Name:    playerData.Name,
+				Faction: gameworld.Faction(playerData.Faction),
+			}
+			saveErr := player.SaveUserID(ctx, nk, userID)
+			if saveErr != nil {
+				return "", err
+			}
+			return "", nil
+		}
+	}
+	return "", errors.New("Unknown error occured!")
 }

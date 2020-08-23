@@ -73,7 +73,7 @@ func (m *Match) MatchJoinAttempt(ctx context.Context, logger runtime.Logger, db 
 		return mState, false, "User already logged in."
 	} else {
 
-		dataExist, err := entities.PlayerDataExists(ctx, nk, presence)
+		dataExist, err := entities.PlayerDataExists(ctx, nk, presence.GetUserId())
 		if err != nil {
 			logger.Error(err.Error())
 			return mState, false, err.Error()

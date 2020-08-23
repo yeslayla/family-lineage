@@ -20,5 +20,9 @@ func InitModule(ctx context.Context, logger runtime.Logger, db *sql.DB, nk runti
 		logger.Error("Unable to register: %v", err)
 		return err
 	}
+	if err := initializer.RegisterRpc("create_character", rpc.CreateCharacter); err != nil {
+		logger.Error("Unable to register: %v", err)
+		return err
+	}
 	return nil
 }

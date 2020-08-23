@@ -30,13 +30,13 @@ type PlayerPosResponse struct {
 }
 
 // PlayerDataExists checks if precense has saved data
-func PlayerDataExists(ctx context.Context, nk runtime.NakamaModule, presence runtime.Presence) (bool, error) {
+func PlayerDataExists(ctx context.Context, nk runtime.NakamaModule, userID string) (bool, error) {
 
 	Reads := []*runtime.StorageRead{
 		&runtime.StorageRead{
 			Collection: "playerdata",
 			Key:        "data",
-			UserID:     presence.GetUserId(),
+			UserID:     userID,
 		},
 	}
 	records, err := nk.StorageRead(ctx, Reads)
@@ -85,8 +85,14 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 	return player, nil
 }
 
-// Save saves player data to nakama
+// Save passes the precensce id to SaveUserID
 func (p *PlayerEntity) Save(ctx context.Context, nk runtime.NakamaModule) error {
+
+	return p.SaveUserID(ctx, nk, p.Presence.GetUserId())
+}
+
+// SaveUserID saves player data to nakama
+func (p *PlayerEntity) SaveUserID(ctx context.Context, nk runtime.NakamaModule, userID string) error {
 
 	saveData := PlayerSaveData{
 		Name:    p.Name,
@@ -103,7 +109,7 @@ func (p *PlayerEntity) Save(ctx context.Context, nk runtime.NakamaModule) error 
 			Collection: "playerdata",
 			Key:        "data",
 			Value:      string(saveJSON),
-			UserID:     p.Presence.GetUserId(),
+			UserID:     userID,
 		},
 	}
 
