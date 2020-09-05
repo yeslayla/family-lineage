@@ -113,15 +113,18 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 
 		if loadPlayerErr != nil {
 			logger.Error(loadPlayerErr.Error())
-			player.X = 16
-			player.Y = 16
-		} else {
-			logger.Error(loadPlayerErr.Error())
 			player = &entities.PlayerEntity{
 				X:        16,
 				Y:        16,
 				Name:     "ERROR",
 				Presence: precense,
+			}
+		} else {
+			if player != nil {
+				player.X = 16
+				player.Y = 16
+			} else {
+				logger.Error("Tried to access nil player object!")
 			}
 		}
 		logger.Info("Successfully loaded player object from storage!")
