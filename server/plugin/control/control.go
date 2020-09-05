@@ -101,15 +101,9 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 
 	for _, precense := range presences {
 
-		logger.Info("Starting join logic...")
 		// Add presence to map
 		mState.presences[precense.GetUserId()] = precense
-
-		logger.Info("Added precense to list")
-
 		player, loadPlayerErr := entities.LoadPlayer(ctx, nk, precense)
-
-		logger.Info("Ran loadplayer method!")
 
 		if loadPlayerErr != nil {
 			logger.Error(loadPlayerErr.Error())
@@ -120,14 +114,9 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				Presence: precense,
 			}
 		} else {
-			if player != nil {
-				player.X = 16
-				player.Y = 16
-			} else {
-				logger.Error("Tried to access nil player object!")
-			}
+			player.X = 16
+			player.Y = 16
 		}
-		logger.Info("Successfully loaded player object from storage!")
 
 		if jsonObj, err := player.GetPosJSON(); err != nil {
 			logger.Error(err.Error())
@@ -142,9 +131,9 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				logger.Error(sendErr.Error())
 			}
 		}
-		logger.Info("Successfully sent player state and location!")
 
 		mState.players[precense.GetUserId()] = *player
+		logger.Info(fmt.Sprintf("%s joined the match!", player.Presence.GetUsername()))
 
 		// Get intial tile data around player
 		if regionData, err := mState.worldMap.GetJSONRegionAround(player.X, player.Y, maxRenderDistance); err != nil {
@@ -156,8 +145,6 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				logger.Error(sendErr.Error())
 			}
 		}
-
-		logger.Info("Successfully send intial tile data to connected players")
 
 		for _, otherPlayer := range mState.players {
 			// Broadcast player data to client
@@ -201,16 +188,19 @@ func (m *Match) MatchLoop(ctx context.Context, logger runtime.Logger, db *sql.DB
 	for _, message := range messages {
 		if message.GetOpCode() == OpCodeUpdatePosition {
 			player := mState.players[message.GetUserId()]
-
-			if response, err := player.ParsePositionRequest(message.GetData()); err == nil {
-				player.UpdateBasedOnResponse(response)
-				if jsonObject, err := player.GetPosJSON(); err == nil {
-					dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObject, mState.GetPrecenseList(), player.Presence, false)
+			if player.Presence != nil {
+				if response, err := player.ParsePositionRequest(message.GetData()); err == nil {
+					player.UpdateBasedOnResponse(response)
+					if jsonObject, err := player.GetPosJSON(); err == nil {
+						dispatcher.BroadcastMessage(OpCodeUpdatePosition, jsonObject, mState.GetPrecenseList(), player.Presence, false)
+					} else {
+						logger.Error(fmt.Sprintf("Failed to get player json: %s", err.Error))
+					}
 				} else {
-					logger.Error(fmt.Sprintf("Failed to get player json: %s", err.Error))
+					logger.Error(fmt.Sprintf("Failed to parse update pos request: %s", err.Error))
 				}
 			} else {
-				logger.Error(fmt.Sprintf("Failed to parse update pos request: %s", err.Error))
+				logger.Warn(fmt.Sprintf("Attempted to update the position of a player (%s) that does not exist", message.GetUsername()))
 			}
 		}
 	}
