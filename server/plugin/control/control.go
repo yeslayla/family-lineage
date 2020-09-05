@@ -101,10 +101,16 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 
 	for _, precense := range presences {
 
+		logger.Info("Starting join logic...")
 		// Add presence to map
 		mState.presences[precense.GetUserId()] = precense
 
+		logger.Info("Added precense to list")
+
 		player, loadPlayerErr := entities.LoadPlayer(ctx, nk, precense)
+
+		logger.Info("Ran loadplayer method!")
+
 		if loadPlayerErr != nil {
 			logger.Error(loadPlayerErr.Error())
 			player.X = 16
