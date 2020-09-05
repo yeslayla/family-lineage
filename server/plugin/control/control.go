@@ -111,13 +111,14 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 			player.Y = 16
 		} else {
 			logger.Error(loadPlayerErr.Error())
-			player = entities.PlayerEntity{
+			player = &entities.PlayerEntity{
 				X:        16,
 				Y:        16,
 				Name:     "ERROR",
 				Presence: precense,
 			}
 		}
+		logger.Info("Successfully loaded player object from storage!")
 
 		if jsonObj, err := player.GetPosJSON(); err != nil {
 			logger.Error(err.Error())
@@ -126,12 +127,15 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				logger.Error(sendErr.Error())
 			}
 			stateJSON, _ := player.GetStateJSON()
+
+			// Send player state to clients
 			if sendErr := dispatcher.BroadcastMessage(OpCodePlayerState, stateJSON, mState.GetPrecenseList(), player.Presence, true); sendErr != nil {
 				logger.Error(sendErr.Error())
 			}
 		}
+		logger.Info("Successfully sent player state and location!")
 
-		mState.players[precense.GetUserId()] = player
+		mState.players[precense.GetUserId()] = *player
 
 		// Get intial tile data around player
 		if regionData, err := mState.worldMap.GetJSONRegionAround(player.X, player.Y, maxRenderDistance); err != nil {
@@ -143,6 +147,9 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 				logger.Error(sendErr.Error())
 			}
 		}
+
+		logger.Info("Successfully send intial tile data to connected players")
+
 		for _, otherPlayer := range mState.players {
 			// Broadcast player data to client
 			if jsonObj, err := otherPlayer.GetPosJSON(); err != nil {

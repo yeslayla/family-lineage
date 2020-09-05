@@ -53,7 +53,7 @@ func PlayerDataExists(ctx context.Context, nk runtime.NakamaModule, userID strin
 }
 
 // LoadPlayer creates player object
-func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.Presence) (PlayerEntity, error) {
+func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.Presence) (*PlayerEntity, error) {
 	player := PlayerEntity{Presence: presence}
 
 	// Read storage
@@ -66,7 +66,7 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 	}
 	records, err := nk.StorageRead(ctx, PlayerReads)
 	if err != nil {
-		return player, err
+		return &player, err
 	}
 
 	// Load storage records into object
@@ -76,7 +76,7 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 			responseData := PlayerSaveData{}
 			err := json.Unmarshal([]byte(record.Value), &responseData)
 			if err != nil {
-				return player, err
+				return &player, err
 			}
 			player.Name = responseData.Name
 			player.Faction = gameworld.Faction(responseData.Faction)
@@ -84,7 +84,7 @@ func LoadPlayer(ctx context.Context, nk runtime.NakamaModule, presence runtime.P
 			player.Y = 16.0
 		}
 	}
-	return player, nil
+	return &player, nil
 }
 
 // GetPosJSON returns the player's position as a JSON object

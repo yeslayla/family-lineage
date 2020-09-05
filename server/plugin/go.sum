@@ -14,6 +14,7 @@ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5a
 github.com/heroiclabs/nakama-common v1.5.1 h1:ViCm9AvYYdQOCSKEa34SuSQ80JyZOHl6ODawESWf2wk=
 github.com/heroiclabs/nakama-common v1.5.1/go.mod h1:nZAXHdeo4SyPlCyf7pU9rCVizxEhBF74gt7teDe/EaQ=
 github.com/heroiclabs/nakama-common v1.7.2 h1:FQedePGCorBl3tXW4Ro8+XLGbEDQfGrT5Tb07j1UaLc=
+github.com/heroiclabs/nakama-common v1.7.3 h1:HksdpzLdSzfbOGRlrHgZIz+dPXrM9oaWrIEZXnWW3eE=
 github.com/josephbmanley/family v0.0.0-20200815220504-0d9d05943cef h1:6oijVkew6eKI1fGE+YMaxmiNlp/hkN9wDpStoid9/ZI=
 github.com/josephbmanley/family v0.0.0-20200816202226-abfb0f428423 h1:ynsJFMYkfs3JspzvLCfmPGJwdKY/4QeX457U0+y4J1I=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
