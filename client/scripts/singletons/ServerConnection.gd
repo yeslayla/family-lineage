@@ -4,19 +4,21 @@ signal tile_update(tile_data)
 signal player_joined(user_id)
 signal player_left(user_id)
 signal player_pos_update(user_id, pos)
+signal player_state_update(user_id, user_name, faction)
 
 const KEY := "defaultkey"
 const SERVER_ENDPOINT := "nakama.cloudsumu.com"
 
 var _session : NakamaSession
-var _client : NakamaClient = Nakama.create_client(KEY, SERVER_ENDPOINT, 7350, "http")
+var _client : NakamaClient = Nakama.create_client(KEY, SERVER_ENDPOINT, 7350, "http", Nakama.DEFAULT_TIMEOUT, NakamaLogger.LOG_LEVEL.ERROR)
 var _socket : NakamaSocket
 var _precenses : Dictionary = {}
 var _world_id
 
 enum OPCODE {
 	tile_update = 1,
-	update_position = 2
+	update_position = 2,
+	player_state = 3
 }
 
 func authenticate_async(email : String, password : String) -> NakamaException:
@@ -62,6 +64,11 @@ func join_world_async() -> Dictionary:
 	var match_join_result : NakamaRTAPI.Match = yield(_socket.join_match_async(world.payload), "completed")
 	if match_join_result.is_exception():
 		print("Join match error: %s - %s" % [match_join_result.exception.status_code, match_join_result.exception.message])
+		
+		# THIS SECTION NEEDS TO BE UPADTED TO BE DECOUPLED
+		# IT SHOULD ALSO NOT CATCH ALL JOIN ERRORS!
+		get_tree().change_scene("res://scenes/CharacterCreation.tscn")
+		
 		return {}
 		
 	_world_id = world.payload
@@ -95,7 +102,17 @@ func _on_socket_received_match_state(match_state: NakamaRTAPI.MatchData):
 		OPCODE.update_position:
 			var pos_data = JSON.parse(match_state.data).result
 			emit_signal("player_pos_update", pos_data["player"], Vector2(float(pos_data["x"]), float(pos_data["y"])))
+		OPCODE.player_state:
+			var state_data = JSON.parse(match_state.data).result
+			emit_signal("player_state_update", state_data["player"], state_data["name"], state_data["faction"])
 
 func send_player_position(position : Vector2) -> void:
 	_socket.send_match_state_async(_world_id, OPCODE.update_position, JSON.print({X = str(position.x), Y = str(position.y)}))
 
+func create_character_async(name : String, faction : int) -> Dictionary:
+	
+	var character_response : NakamaAPI.ApiRpc = yield(_client.rpc_async(_session, "create_character", JSON.print({"name":name, "faction" : faction})), "completed")
+	if character_response.is_exception():
+		print("Create character error occured: %s" % character_response.exception.message)
+		return false
+	return true

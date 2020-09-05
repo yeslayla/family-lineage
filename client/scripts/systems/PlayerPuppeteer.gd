@@ -11,6 +11,7 @@ func _ready():
 	ServerConnection.connect("player_joined", self, "on_player_join")
 	ServerConnection.connect("player_left", self, "on_player_leave")
 	ServerConnection.connect("player_pos_update", self, "on_player_pos_update")
+	ServerConnection.connect("player_state_update", self, "on_player_state_update")
 
 
 func on_player_join(user_id):
@@ -29,3 +30,12 @@ func on_player_pos_update(user_id, pos):
 	if user_id != ServerConnection._session.user_id:
 		var player_puppet : Node2D = puppets[user_id]
 		player_puppet.global_position = pos
+
+func on_player_state_update(user_id, user_name, faction):
+	if user_id != ServerConnection._session.user_id:
+		if user_id in puppets:
+			var player_puppet : Node2D = puppets[user_id]
+			player_puppet.name = user_name
+			player_puppet.set_faction(faction)
+		else:
+			print("Could not update player state for nonexisting player!")
