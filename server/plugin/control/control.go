@@ -133,7 +133,7 @@ func (m *Match) MatchJoin(ctx context.Context, logger runtime.Logger, db *sql.DB
 		}
 
 		mState.players[precense.GetUserId()] = *player
-		logger.Info(fmt.Sprintf("%s joined the match!", player.Presence.GetUsername()))
+		logger.Info(fmt.Sprintf("%s joined match '%s'!", player.Presence.GetUsername(), ctx.Value(runtime.RUNTIME_CTX_MATCH_ID).(string)))
 
 		// Get intial tile data around player
 		if regionData, err := mState.worldMap.GetJSONRegionAround(player.X, player.Y, maxRenderDistance); err != nil {
